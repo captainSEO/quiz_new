@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통합사회 실전 모의고사</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --primary-light: #EEF2FF;
+            --success: #10B981;
+            --success-light: #ECFDF5;
+            --danger: #EF4444;
+            --danger-light: #FEF2F2;
+            --warning: #F59E0B;
+            --bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px 16px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 640px;
+            background: var(--card-bg);
+            border-radius: 28px;
+            box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            padding: 40px 32px;
+            animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 1. 시작 화면 */
+        .start-badge {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: -0.3px;
+        }
+
+        .start-title {
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.35;
+            margin-bottom: 12px;
+            word-break: keep-all;
+        }
+
+        .start-desc {
+            font-size: 1rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 32px;
+            word-break: keep-all;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 36px;
+        }
+
+        .info-box {
+            background: #F1F5F9;
+            padding: 16px 12px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .info-box span {
+            display: block;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .info-box strong {
+            font-size: 1.15rem;
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        /* 공통 버튼 */
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 16px 24px;
+            border-radius: 16px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #F1F5F9;
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background: #E2E8F0;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-warning:hover {
+            filter: brightness(0.95);
+            transform: translateY(-1px);
+        }
+
+        /* 2. 퀴즈 화면 */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .badge-mode {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .badge-mode.main {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .badge-mode.review {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .progress-count {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: #E2E8F0;
+            border-radius: 999px;
+            margin-bottom: 28px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            border-radius: 999px;
+            transition: width 0.3s ease;
+        }
+
+        .quiz-question {
+            font-size: 1.22rem;
+            font-weight: 800;
+            line-height: 1.5;
+            margin-bottom: 24px;
+            word-break: keep-all;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .option-item {
+            background: #FFFFFF;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 20px;
+            font-size: 0.98rem;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-main);
+            word-break: keep-all;
+            line-height: 1.4;
+        }
+
+        .option-item:hover:not(:disabled) {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .option-item.correct {
+            border-color: var(--success);
+            background: var(--success-light);
+            color: #065F46;
+        }
+
+        .option-item.wrong {
+            border-color: var(--danger);
+            background: var(--danger-light);
+            color: #991B1B;
+        }
+
+        .option-item:disabled {
+            cursor: default;
+        }
+
+        .feedback-box {
+            display: none;
+            padding: 18px 20px;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            line-height: 1.55;
+            margin-bottom: 24px;
+            word-break: keep-all;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .feedback-box.correct {
+            background: var(--success-light);
+            border-left: 4px solid var(--success);
+            color: #065F46;
+        }
+
+        .feedback-box.wrong {
+            background: var(--danger-light);
+            border-left: 4px solid var(--danger);
+            color: #991B1B;
+        }
+
+        /* 3. 결과 화면 */
+        .result-container {
+            text-align: center;
+        }
+
+        .score-card {
+            background: linear-gradient(135deg, #4F46E5, #3730A3);
+            border-radius: 24px;
+            padding: 32px 24px;
+            color: white;
+            margin-bottom: 28px;
+        }
+
+        .score-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .score-val {
+            font-size: 3.2rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .accuracy-rate {
+            font-size: 1.1rem;
+            font-weight: 600;
+            opacity: 0.95;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .stat-item {
+            background: #F8FAFC;
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 16px;
+        }
+
+        .stat-item span {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .stat-item strong {
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+
+        .stat-item.correct-stat strong { color: var(--success); }
+        .stat-item.wrong-stat strong { color: var(--danger); }
+
+        .btn-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- [1] 시작 화면 -->
+        <div id="screen-start" class="screen active">
+            <span class="start-badge">통합사회 모의평가</span>
+            <h1 class="start-title">핵심 단원 실전 모의고사</h1>
+            <p class="start-desc">인권 보장과 헌법, 사회 정의와 불평등, 자본주의와 경제 체제 핵심 50문항 라이브러리에서 엄선된 20문항이 무작위 출제됩니다.</p>
+            
+            <div class="info-grid">
+                <div class="info-box">
+                    <span>출제 문항</span>
+                    <strong>20문제</strong>
+                </div>
+                <div class="info-box">
+                    <span>문항 풀</span>
+                    <strong>50개</strong>
+                </div>
+                <div class="info-box">
+                    <span>오답 클리닉</span>
+                    <strong>제공</strong>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="startMainQuiz()">모의고사 시작하기</button>
+        </div>
+
+        <!-- [2] 퀴즈 진행 화면 -->
+        <div id="screen-quiz" class="screen">
+            <div class="quiz-header">
+                <span id="quiz-mode-badge" class="badge-mode main">정규 시험</span>
+                <span id="quiz-counter" class="progress-count">01 / 20</span>
+            </div>
+            
+            <div class="progress-bar-bg">
+                <div id="progress-bar" class="progress-bar-fill"></div>
+            </div>
+
+            <h2 id="question-text" class="quiz-question">질문이 여기에 표시됩니다.</h2>
+
+            <div id="options-container" class="options-list"></div>
+
+            <div id="feedback-box" class="feedback-box"></div>
+
+            <button id="next-btn" class="btn btn-primary" style="display:none;" onclick="handleNextStep()">다음 문제</button>
+        </div>
+
+        <!-- [3] 결과 화면 -->
+        <div id="screen-result" class="screen result-container">
+            <h2 style="font-size:1.6rem; font-weight:800; margin-bottom:20px;">시험 결과 보고서</h2>
+            
+            <div class="score-card">
+                <div class="score-label">취득 점수</div>
+                <div id="result-score" class="score-val">85점</div>
+                <div id="result-accuracy" class="accuracy-rate">정답률 85% (17 / 20)</div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-item correct-stat">
+                    <span>정답 수</span>
+                    <strong id="stat-correct-count">17</strong>
+                </div>
+                <div class="stat-item wrong-stat">
+                    <span>오답 수</span>
+                    <strong id="stat-wrong-count">3</strong>
+                </div>
+            </div>
+
+            <div class="btn-stack">
+                <button id="btn-review-wrong" class="btn btn-warning" onclick="startWrongReview()">
+                    틀린 문제 다시 풀기
+                </button>
+                <button class="btn btn-secondary" onclick="startMainQuiz()">
+                    새로운 20문제 풀기 (50제 셔플)
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 전체 50문제 데이터베이스 (학습자료 완벽 반영)
+        const allQuestions = [
+            { q: "국가에서 법이나 문서로 보장하기 전부터 자연적으로 부여된 인간의 권리라는 인권의 특성은?", o: ["불가침성", "천부성", "보편성", "합법성"], a: 1, e: "인권은 태어나면서부터 당연히 부여받은 천부적 권리입니다." },
+            { q: "영국에서 국왕의 전제 정치에 반대하여 의회를 중심으로 일어났으며 '권리 장전'을 승인한 혁명은?", o: ["명예혁명", "프랑스 혁명", "미국 독립 혁명", "청교도 혁명"], a: 0, e: "영국의 명예혁명(1688)은 국왕의 권력 행사에 의회의 동의를 받도록 규정하였습니다." },
+            { q: "독립 선언문에 인간의 기본적 인권(생명, 자유, 평등)과 국민 주권, 저항권을 명시한 근대 시민 혁명은?", o: ["영국 명예혁명", "미국 독립 혁명", "프랑스 혁명", "차티스트 운동"], a: 1, e: "미국 독립 혁명(1776)의 독립 선언문에는 근대 민주주의의 기본 원리가 잘 담겨 있습니다." },
+            { q: "19세기 영국에서 노동자 계층이 선거권을 획득하기 위해 인민헌장을 배포하며 전개한 운동은?", o: ["차티스트 운동", "러다이트 운동", "명예혁명", "흑인 민권 운동"], a: 0, e: "차티스트 운동은 재산에 따른 선거권 제한에 맞서 노동자 참정권을 요구한 운동입니다." },
+            { q: "빈부격차를 해결하고 인간다운 생활을 보장하기 위해 독일 '바이마르 헌법'에 세계 최초로 명시된 권리는?", o: ["자유권", "사회권", "참정권", "평등권"], a: 1, e: "사회권(2세대 인권)은 1919년 독일 바이마르 헌법에 처음으로 규정되었습니다." },
+            { q: "카렐 바작이 구분한 '1세대 인권(자유권)'의 핵심적인 성격은 무엇인가?", o: ["국가의 적극적인 개입을 통한 복지 실현", "국가 권력의 간섭을 배제하고 개인의 자유 보장", "전 지구적 차원의 연대와 평화 실현", "사회적 약자에 대한 무조건적인 재산 배분"], a: 1, e: "1세대 인권은 근대 시민 혁명으로 확립되었으며 국가의 부당한 개입을 경계합니다." },
+            { q: "카렐 바작의 인권 3세대 분류 중 '3세대 인권(연대권/집단권)'에 속하는 권리는?", o: ["사상 및 양심의 자유", "교육을 받을 권리", "평화와 발전에 대한 권리", "근로의 권리"], a: 2, e: "평화, 자결권, 재난 구제, 환경에 대한 권리는 국가를 초월한 3세대 연대권에 속합니다." },
+            { q: "제1, 2차 세계대전을 거친 후 국제 연합(UN) 총회에서 인권 보장의 국제 기준을 제시하고자 채택한 문서는?", o: ["권리 장전", "세계 인권 선언", "인간과 시민의 권리 선언", "바이마르 헌법"], a: 1, e: "UN은 1948년 세계 인권 선언을 통해 인권을 보편적 가치로 선포하였습니다." },
+            { q: "쾌적하고 안정적인 환경에서 인간다운 생활을 할 권리를 뜻하며 '주거 기본법'에 명시된 현대 인권은?", o: ["환경권", "안전권", "주거권", "문화권"], a: 2, e: "주거권은 쾌적한 주거 생활을 누릴 수 있도록 국가가 보장하는 권리입니다." },
+            { q: "성별, 종교 등과 관계없이 문화 활동에 참여하고 고유의 생활양식(예: 할랄 푸드 등)을 보장받을 권리는?", o: ["문화권", "정보권", "자유권", "연대권"], a: 0, e: "문화권은 주류 문화 외에 각자의 고유한 언어와 식문화 등을 향유할 권리를 포함합니다." },
+            { q: "헌법에 국민의 기본권을 명시하여 보장하는 가장 근본적인 이유는 무엇인가?", o: ["국가의 조세 수입을 극대화하기 위해", "국가 권력이 국민의 존엄과 가치를 함부로 침해하지 못하게 하기 위해", "법관의 판결 절차를 단순화하기 위해", "외국과의 통상 마찰을 줄이기 위해"], a: 1, e: "최고법인 헌법에 인권을 규정함으로써 국가 권력의 자의적 침해를 방지합니다." },
+            { q: "우리 헌법에 규정된 기본권 중 침해당한 기본권을 구제받기 위한 '수단적 성격'의 권리는?", o: ["자유권", "사회권", "청구권", "평등권"], a: 2, e: "청원권, 재판 청구권, 국가 배상 청구권 등은 기본권 보장을 위한 수단적 권리(청구권)입니다." },
+            { q: "선거권, 공무담임권 등 국가의 정치적 의사 결정에 참여할 수 있는 기본권 유형은?", o: ["참정권", "자유권", "평등권", "사회권"], a: 0, e: "참정권은 국민이 국정에 직접·간접으로 참여할 수 있는 적극적 권리입니다." },
+            { q: "우리 헌법상 국민의 기본권을 제한할 수 있는 3가지 목적에 해당하지 않는 것은?", o: ["국가 안전 보장", "질서 유지", "공공복리", "정부의 행정 편의"], a: 3, e: "기본권은 국가안전보장, 질서유지, 공공복리를 위해서만 법률로써 제한할 수 있습니다." },
+            { q: "국가 권력의 남용을 막기 위해 입법, 사법, 행정으로 국가 권력을 분산시키는 제도는?", o: ["입헌주의", "권력 분립 제도", "사법 심사제", "지방 자치제"], a: 1, e: "권력 분립(삼권분립)은 권력 간의 견제와 균형을 통해 국민의 자유를 지키는 제도입니다." },
+            { q: "잘못된 법을 바로잡기 위해 불이익을 감수하고 의도적으로 법 복종을 거부하는 행위는?", o: ["시민 불복종", "사회 계약", "적극적 평등 조치", "행정 심판"], a: 0, e: "시민 불복종은 부정의한 법과 제도에 저항하는 정당한 최후의 수단입니다." },
+            { q: "시민 불복종의 정당화 요건 중 '자신의 행위가 법률 위반임을 인정하고 처벌을 받아들여야 함'을 뜻하는 것은?", o: ["공공성", "비폭력성", "처벌 감수", "최후 수단성"], a: 2, e: "시민 불복종은 법체계 전체를 파괴하려는 것이 아니므로 처벌 감수를 통해 법에 대한 존중을 보입니다." },
+            { q: "시민 불복종의 정당화 요건 중 '사익이 아닌 사회 정의 실현을 목적으로 해야 함'을 뜻하는 것은?", o: ["공공성", "비폭력성", "처벌 감수", "최후 수단성"], a: 0, e: "개인이나 특정 집단의 사적 이익 추구는 시민 불복종으로 인정받을 수 없습니다." },
+            { q: "신체적·문화적 특징으로 주류 집단에게 차별받으며, 스스로 차별받는 집단이라 인식하는 사람들은?", o: ["사회적 소수자", "부르주아", "기득권층", "시민 단체"], a: 0, e: "사회적 소수자는 단순 인원수의 문제가 아니라 사회적 권력 관계에서 차별받는 위치를 의미합니다." },
+            { q: "사회적 소수자 차별 문제를 해결하기 위한 '개인적 차원'의 방안으로 가장 알맞은 것은?", o: ["차별 금지 법률의 제정", "정부 지원 정책 수립", "편견을 버리고 다양성을 존중하는 태도 함양", "고용 할당제 확대"], a: 2, e: "법률 및 정책 정비는 사회적 차원이며, 편견 극복과 다문화 이해는 개인적 차원입니다." },
+            { q: "근로기준법상 15세 이상 18세 미만 연소 근로자의 1일 법정 근로 시간 한도는?", o: ["5시간", "6시간", "7시간", "8시간"], a: 2, e: "연소 근로자의 법정 근로 시간은 1일 7시간, 1주 35시간을 초과할 수 없습니다." },
+            { q: "근로기준법상 15~18세 미만 청소년이 당사자 합의 시 연장할 수 있는 최대 근로 시간은?", o: ["1일 1시간, 1주 5시간", "1일 2시간, 1주 10시간", "1일 3시간, 1주 15시간", "연장 근로 절대 불가"], a: 0, e: "합의가 있더라도 1일에 1시간, 1주일에 5시간을 한도로만 연장할 수 있습니다." },
+            { q: "미성년자의 근로 계약에 관한 설명 중 옳은 것은?", o: ["친권자가 계약을 대리 체결해야 한다.", "친권자나 후견인은 미성년자의 근로 계약을 대리할 수 없다.", "15세 미만은 예외 없이 절대 일할 수 없다.", "구두 합의만으로도 정식 효력이 인정된다."], a: 1, e: "근로기준법 제67조에 따라 친권자는 근로 계약을 대리할 수 없으며 본인이 체결해야 합니다." },
+            { q: "사업주가 18세 미만 청소년을 고용할 때 사업장에 의무적으로 갖추어 두어야 할 서류는?", o: ["학교장 추천서", "가족 관계 기록 사항 증명서와 친권자 동의서", "재산세 납세 증명서", "건강 진단서 원본"], a: 1, e: "연령 증명서(가족관계증명서)와 친권자(후견인)의 서면 동의서를 비치해야 합니다." },
+            { q: "국제기구 등이 발표하는 인권 지수를 대할 때 바람직한 태도는?", o: ["수치만을 절대적인 진리로 맹신한다.", "지수의 측정 방식과 목적을 파악하고 침해 당사자의 목소리에 귀 기울인다.", "경제력 지수와 완전히 동일하게 취급한다.", "외국 비정부 기구의 조사는 전면 무시한다."], a: 1, e: "인권 지수는 계량화된 수치 이면의 맥락과 당사자의 실질적 현실을 함께 살펴야 합니다." },
+            { q: "아리스토텔레스가 구분한 정의 중 '잘못이나 불공정한 행동을 바로잡는 정의'는?", o: ["분배적 정의", "교정적 정의", "일반적 정의", "형식적 정의"], a: 1, e: "교정적 정의는 타인에게 끼친 손해를 배상하게 하거나 잘못에 상응하는 처벌을 내리는 것입니다." },
+            { q: "아리스토텔레스의 특수적 정의 중 '각자의 몫을 사회적 기준에 따라 공정하게 배분하는 것'은?", o: ["교정적 정의", "분배적 정의", "일반적 정의", "자유적 정의"], a: 1, e: "분배적 정의는 사회적 재화나 권력, 명예를 각자의 정당한 몫에 맞게 나누는 원칙입니다." },
+            { q: "분배의 실질적 기준 중 '능력'에 따른 분배의 단점으로 옳은 것은?", o: ["사회주의 국가에서만 사용된다.", "우연적 요소(선천적 재능이나 환경)가 개입될 수 있다.", "수량화가 너무 쉬워 갈등이 없다.", "결과의 평등만을 추구하여 생산성이 낮아진다."], a: 1, e: "능력의 형성에는 타고난 지능이나 부모의 지원 등 우연적 요소가 크게 작용할 수 있습니다." },
+            { q: "분배의 기준으로 '업적'을 택할 때 얻을 수 있는 가장 큰 장점은?", o: ["약자를 두텁게 보호할 수 있다.", "평가 기준의 수량화가 용이하여 주관적 편견을 배제할 수 있다.", "모든 구성원이 동등한 소득을 얻는다.", "과열 경쟁이 완전히 사라진다."], a: 1, e: "업적은 결과물(실적, 점수 등)이 명확하므로 객관적인 평가가 쉽고 동기 부여가 강력합니다." },
+            { q: "분배의 기준으로 '필요'를 중시할 때 발생하는 문제점(단점)은?", o: ["과열 경쟁으로 인해 사회가 불안정해진다.", "모두의 필요를 충족하기엔 사회적 자원이 한정되어 있고 생산 의욕을 저하시킬 수 있다.", "주관적 편견을 전혀 배제할 수 없다.", "기회의 평등마저 완전히 파괴된다."], a: 1, e: "필요에 따른 분배는 일한 만큼 보상받지 못한다는 인식을 주어 근로 의욕을 떨어뜨릴 수 있습니다." },
+            { q: "개인의 자유와 권리를 최우선으로 여기며, 사회를 개인들의 계약에 의한 단순 집합체로 보는 정의관은?", o: ["공동체주의적 정의관", "자유주의적 정의관", "전체주의적 정의관", "사회주의적 정의관"], a: 1, e: "자유주의적 정의관은 개인이 공동체로부터 독립된 자율적 존재임을 강조합니다." },
+            { q: "공동체주의적 정의관의 한계로 지적될 수 있는 것은?", o: ["극단적 개인주의와 이기주의를 낳는다.", "개인의 자유가 침해당하거나 학연·지연 같은 연고주의가 심화될 수 있다.", "국가의 역할을 완전히 부정한다.", "사익 추구만이 유일한 정의라고 믿는다."], a: 1, e: "공동체주의가 과도해지면 집단을 위한 개인의 희생 강요나 연고주의 폐단이 발생합니다." },
+            { q: "자유주의와 공동체주의 정의관을 조화롭게 적용하는 올바른 태도는?", o: ["사익과 공익은 절대 타협할 수 없으므로 하나를 포기한다.", "개인은 공동체에 대한 의무를 다하고, 공동체는 개인의 기본권을 보장한다.", "공익을 위해 사익 추구는 전면 법으로 금지한다.", "국가는 어떠한 복지 정책도 시행하지 않는다."], a: 1, e: "두 정의관은 대립적이기보다 상호보완적으로 균형을 이루어야 건강한 사회가 됩니다." },
+            { q: "사회 계층 내 중산층 비중이 줄어들고 상층과 하층으로 양극단으로 몰리는 현상은?", o: ["공간 불평등", "사회 계층의 양극화", "연고주의 심화", "지역 격차 완화"], a: 1, e: "부의 대물림이나 노동 시장의 격차로 인해 중산층이 붕괴하고 양극화가 발생합니다." },
+            { q: "성장 거점 개발 과정에서 수도권에 인구와 인프라가 집중되어 지역 간 격차가 커지는 현상은?", o: ["공간 불평등", "교정적 불평등", "절차적 불평등", "문화적 단절"], a: 0, e: "수도권과 비수도권 간의 자원 불균등 배분을 공간 불평등이라고 합니다." },
+            { q: "국민에게 닥치는 사회적 위험을 보험 방식으로 사전에 대비하는 사회복지제도는?", o: ["사회보험", "공공부조", "사회 서비스", "기업 복지"], a: 0, e: "국민연금, 건강보험, 고용보험, 산재보험 등은 대표적인 사회보험입니다." },
+            { q: "스스로 생활 능력이 없는 빈곤층의 최저 생활을 보장하기 위해 국가가 전액 지원하는 제도는?", o: ["국민연금", "고용보험", "공공부조 (기초생활보장 등)", "노인맞춤돌봄서비스"], a: 2, e: "공공부조는 사후 구제적 성격을 가지며 국가 재정으로 최저 생계를 지원합니다." },
+            { q: "노인 돌봄, 재활, 상담 등 사회적 약자에게 비금전적 편의와 돌봄을 제공하는 제도는?", o: ["사회 서비스", "공공부조", "사회보험", "적극적 우대조치"], a: 0, e: "사회 서비스는 일상생활이 어려운 취약 계층에게 직접적인 돌봄 서비스를 제공합니다." },
+            { q: "사회적 약자의 실질적 평등을 위해 일정 비율 입학이나 고용 혜택을 주는 제도는?", o: ["적극적 평등 실현 조치", "자유방임 정책", "공공부조 제도", "신자유주의 정책"], a: 0, e: "적극적 우대 조치는 불평등을 완화하지만 다수자에 대한 역차별 논란이 생기지 않도록 주의해야 합니다." },
+            { q: "금과 은의 축적을 국부로 여겨 수출을 장려하고 수입을 억제하던 16~18세기 자본주의는?", o: ["상업 자본주의 (중상주의)", "산업 자본주의", "독점 자본주의", "수정 자본주의"], a: 0, e: "상업 자본주의 시기에는 절대왕정의 비호 아래 무역 차액을 통한 부의 축적에 힘썼습니다." },
+            { q: "산업 혁명 이후 '보이지 않는 손'에 의한 시장 조절과 국가의 불개입을 주장한 사조는?", o: ["자유방임주의", "중상주의", "케인즈주의", "신자유주의"], a: 0, e: "산업 자본주의 시기 애덤 스미스를 필두로 시장의 자율성을 신봉하는 자유방임주의가 퍼졌습니다." },
+            { q: "1929년 대공황 이후 시장의 실패를 극복하고자 정부의 시장 개입과 복지 지출을 확대한 형태는?", o: ["수정 자본주의", "신자유주의", "상업 자본주의", "식민 자본주의"], a: 0, e: "수정 자본주의는 정부가 적극적으로 시장에 개입하여 유효 수요를 창출해야 한다고 보았습니다." },
+            { q: "1970년대 석유 파동 이후 정부 실패를 비판하며 공기업 민영화, 규제 완화를 요구한 사조는?", o: ["신자유주의", "수정 자본주의", "사회주의", "중상주의"], a: 0, e: "신자유주의는 '작은 정부'를 지향하며 민간의 자유로운 시장 경제 활동을 다시 강조했습니다." },
+            { q: "19세기 말 소수의 거대 기업이 카르텔, 트러스트 등으로 시장을 장악하며 횡포를 부린 자본주의는?", o: ["독점 자본주의", "상업 자본주의", "수정 자본주의", "생태 자본주의"], a: 0, e: "독점 자본주의는 시장 경쟁을 제한하고 가격을 좌지우지하여 대공황의 도화선이 되었습니다." },
+            { q: "민간 경제 주체들의 자유로운 가격 경쟁을 통해 경제 문제를 해결하는 경제 체제는?", o: ["시장경제 체제", "계획경제 체제", "전통경제 체제", "명령경제 체제"], a: 0, e: "시장경제 체제는 사유재산권과 자유 경쟁을 기본 동력으로 삼습니다." },
+            { q: "국가가 중앙의 통제와 명령에 따라 무엇을 얼마나 만들지 일괄 결정하는 경제 체제는?", o: ["계획경제 체제", "시장경제 체제", "혼합경제 체제", "상업경제 체제"], a: 0, e: "사회주의와 결합하는 계획경제 체제는 국가가 모든 생산과 분배를 통제합니다." },
+            { q: "계획경제 체제가 가진 가장 치명적인 문제점(한계)은 무엇인가?", o: ["빈부격차가 감당할 수 없을 정도로 심화된다.", "노동에 대한 차등 보상이 적어 근로 의욕과 창의성이 저하된다.", "물가가 폭등하고 실업이 주기적으로 발생한다.", "소비자의 다양한 기호가 즉각 반영된다."], a: 1, e: "개인의 성취에 비례한 보상이 주어지지 않아 생산성과 발전 동력이 크게 떨어집니다." },
+            { q: "시장경제를 바탕으로 하되 계획경제적 요소를 가미하여 정부가 복지와 규제를 병행하는 오늘날의 체제는?", o: ["혼합 경제 체제", "순수 계획경제 체제", "초기 자본주의 체제", "자연 경제 체제"], a: 0, e: "현대 대다수 국가는 시장경제의 장점과 정부의 개입을 조화시킨 혼합 경제 체제를 채택하고 있습니다." },
+            { q: "자본주의 체제를 지탱하는 기본 원리에 해당하지 않는 것은?", o: ["사유 재산 제도의 보장", "직업 선택 및 계약의 자유", "사적 이익 추구 인정", "생산 수단의 전면 국유화"], a: 3, e: "생산 수단의 전면 국유화와 사유 재산 부정은 사회주의·계획경제 체제의 특징입니다." },
+            { q: "지방 균형 발전을 위해 수도권 공공기관을 지방으로 이전하여 조성한 도시는?", o: ["혁신 도시", "기업 도시", "소비 도시", "관광 특구"], a: 0, e: "공공기관 이전을 통한 거점 도시 개발 모델을 '혁신도시'라고 합니다." }
+        ];
+
+        // 퀴즈 제어 상태
+        let currentQuizSet = [];
+        let currentIndex = 0;
+        let score = 0;
+        let userWrongAnswers = []; // 틀린 문제들을 저장할 배열
+        let isReviewMode = false;
+        let hasAnswered = false;
+
+        // 화면 전환 함수
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // 배열 셔플 (Fisher-Yates)
+        function shuffle(arr) {
+            const temp = [...arr];
+            for (let i = temp.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [temp[i], temp[j]] = [temp[j], temp[i]];
+            }
+            return temp;
+        }
+
+        // [기능 1 & 4] 새로운 20문제 메인 모의고사 시작 (50제 중 20제 셔플)
+        function startMainQuiz() {
+            isReviewMode = false;
+            userWrongAnswers = [];
+            currentQuizSet = shuffle(allQuestions).slice(0, 20);
+            currentIndex = 0;
+            score = 0;
+
+            document.getElementById('quiz-mode-badge').innerText = "정규 모의고사";
+            document.getElementById('quiz-mode-badge').className = "badge-mode main";
+
+            showScreen('screen-quiz');
+            renderQuestion();
+        }
+
+        // [기능 3] 틀린 문제 복습 모드 시작
+        function startWrongReview() {
+            if (userWrongAnswers.length === 0) return;
+            
+            isReviewMode = true;
+            currentQuizSet = [...userWrongAnswers]; // 틀렸던 문제 목록으로 세팅
+            currentIndex = 0;
+            userWrongAnswers = []; // 다시 풀 때 또 틀리는 문제를 담기 위해 초기화
+
+            document.getElementById('quiz-mode-badge').innerText = "오답 집중 클리닉";
+            document.getElementById('quiz-mode-badge').className = "badge-mode review";
+
+            showScreen('screen-quiz');
+            renderQuestion();
+        }
+
+        // 문제 렌더링
+        function renderQuestion() {
+            hasAnswered = false;
+            const qData = currentQuizSet[currentIndex];
+            const total = currentQuizSet.length;
+
+            // 진행률 및 번호 업데이트
+            document.getElementById('quiz-counter').innerText = `${String(currentIndex + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+            document.getElementById('progress-bar').style.width = `${(currentIndex / total) * 100}%`;
+            
+            // 질문 텍스트
+            document.getElementById('question-text').innerText = `${currentIndex + 1}. ${qData.q}`;
+
+            // 보기 목록 생성
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            qData.o.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-item';
+                btn.innerText = optText;
+                btn.onclick = () => selectOption(idx, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            // 피드백 박스 & 다음 버튼 초기화
+            const feedbackBox = document.getElementById('feedback-box');
+            feedbackBox.style.display = 'none';
+            feedbackBox.className = 'feedback-box';
+            
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.style.display = 'none';
+            nextBtn.innerText = (currentIndex === total - 1) ? "결과 확인하기" : "다음 문제";
+        }
+
+        // 보기 선택 이벤트
+        function selectOption(selectedIndex, btnElement) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+
+            const qData = currentQuizSet[currentIndex];
+            const buttons = document.querySelectorAll('.option-item');
+            const feedbackBox = document.getElementById('feedback-box');
+            const nextBtn = document.getElementById('next-btn');
+
+            // 버튼 비활성화
+            buttons.forEach(b => b.disabled = true);
+
+            if (selectedIndex === qData.a) {
+                // 정답
+                btnElement.classList.add('correct');
+                feedbackBox.innerHTML = `<strong>정답입니다!</strong><br>${qData.e}`;
+                feedbackBox.classList.add('correct');
+                if (!isReviewMode) score++;
+            } else {
+                // 오답
+                btnElement.classList.add('wrong');
+                buttons[qData.a].classList.add('correct');
+                feedbackBox.innerHTML = `<strong>오답입니다.</strong><br>${qData.e}`;
+                feedbackBox.classList.add('wrong');
+                
+                // 오답 목록에 수집 (중복 방지)
+                if (!userWrongAnswers.some(item => item.q === qData.q)) {
+                    userWrongAnswers.push(qData);
+                }
+            }
+
+            feedbackBox.style.display = 'block';
+            nextBtn.style.display = 'block';
+        }
+
+        // 다음 문제 or 결과 화면으로 이동
+        function handleNextStep() {
+            currentIndex++;
+            if (currentIndex < currentQuizSet.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // [기능 2 & 3] 최종 결과 및 정답률 표시
+        function showResults() {
+            showScreen('screen-result');
+
+            const total = isReviewMode ? currentQuizSet.length : 20;
+            const correctCount = isReviewMode ? (total - userWrongAnswers.length) : score;
+            const wrongCount = isReviewMode ? userWrongAnswers.length : (20 - score);
+            const accuracy = Math.round((correctCount / total) * 100);
+
+            // 점수 및 텍스트 바인딩
+            document.getElementById('result-score').innerText = isReviewMode ? `${accuracy}점` : `${score * 5}점`;
+            document.getElementById('result-accuracy').innerText = `정답률 ${accuracy}% (${correctCount} / ${total})`;
+            document.getElementById('stat-correct-count').innerText = correctCount;
+            document.getElementById('stat-wrong-count').innerText = wrongCount;
+
+            // 오답 다시 풀기 버튼 제어
+            const reviewBtn = document.getElementById('btn-review-wrong');
+            if (userWrongAnswers.length > 0) {
+                reviewBtn.style.display = 'block';
+                reviewBtn.innerText = `틀린 문제 다시 풀기 (${userWrongAnswers.length}문제)`;
+            } else {
+                reviewBtn.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
